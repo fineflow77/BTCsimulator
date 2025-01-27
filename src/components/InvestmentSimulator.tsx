@@ -45,18 +45,16 @@ export default function InvestmentSimulator() {
   const handleCalculate = () => {
     setErrorMessage(null);
   
-    // 型チェックを追加
     if (btcAmount === "" || monthlyInvestment === "") {
       setErrorMessage("すべての項目を入力してください。");
       return;
     }
   
     const model = MODELS[modelKey];
-    const yearlyInvestment = parseFloat(monthlyInvestment.toString()) * 12 * 1_0000; // 年間投資額 (円)
-    let totalInvestment = 0; // 累計投資額
-    let totalBtc = parseFloat(btcAmount.toString()); // 初期BTC量
-    const [results, setResults] = useState<
-    {
+    const yearlyInvestment = parseFloat(monthlyInvestment.toString()) * 12 * 1_0000;
+    let totalInvestment = 0;
+    let totalBtc = parseFloat(btcAmount.toString());
+    const newResults: {
       year: number;
       cagr: string;
       btcPrice: string;
@@ -66,8 +64,30 @@ export default function InvestmentSimulator() {
       totalValue: string;
       btcPriceUsd: number;
       totalBtcRaw: number;
-    }[]
-  >([]);
+    }[] = [];
+  
+    for (let i = 0; i < model.cagr.length; i++) {
+      const year = CURRENT_YEAR + i;
+      const cagr = model.cagr[i] / 100;
+      const btcPriceUsd: number = i === 0 ? model.startPrice : newResults[i - 1].btcPriceUsd * (1 + cagr);
+      const btcPriceJpy = btcPriceUsd * usdJpyRate;
+  
+      const btcPurchased = yearlyInvestment / btcPriceJpy;
+      totalInvestment += yearlyInvestment;
+      totalBtc += btcPurchased;
+  
+      newResults.push({
+        year,
+        cagr: `${(cagr * 100).toFixed(1)}%`,
+        btcPrice: formatMoney(btcPriceJpy),
+        annualInvestment: formatMoney(yearlyInvestment),
+        btcPurchased: `${btcPurchased.toFixed(4)} BTC`,
+        totalBtc: `${totalBtc.toFixed(4)} BTC`,
+        totalValue: formatMoney(totalBtc * btcPriceJpy),
+        btcPriceUsd,
+        totalBtcRaw: totalBtc,
+      });
+    }
   
     setResults(newResults);
   };
