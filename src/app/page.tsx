@@ -9,7 +9,6 @@ export default function Home() {
       <div className="relative grid min-h-screen grid-cols-[1fr_2.5rem_auto_2.5rem_1fr] grid-rows-[1fr_1px_auto_1px_1fr] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <div className="col-start-3 row-start-3 flex max-w-lg flex-col bg-gray-100 p-6 rounded-lg shadow-lg dark:bg-gray-800">
           <div className="rounded-xl bg-white p-6 text-sm/7 text-gray-700 dark:bg-gray-950 dark:text-gray-300">
-            {/* Next.js の Image コンポーネントで LCP を最適化 */}
             <div className="flex justify-center mb-8">
               <Image
                 src="/img/logo.svg"
@@ -28,11 +27,9 @@ export default function Home() {
                 priority
               />
             </div>
-            {/* 説明文 */}
             <p className="mb-4">
               An advanced online playground for Tailwind CSS, including support for things like:
             </p>
-            {/* リスト */}
             <ul className="list-disc list-inside space-y-2">
               <li>
                 Customizing your theme with{" "}
@@ -46,7 +43,6 @@ export default function Home() {
               <li>Prototyping and sharing your ideas online</li>
             </ul>
             <hr className="my-6 border-gray-300 dark:border-gray-700" />
-            {/* ドキュメントへのリンク */}
             <p className="text-center">
               <a
                 href="https://tailwindcss.com/docs"
