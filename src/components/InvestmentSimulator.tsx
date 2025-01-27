@@ -44,23 +44,12 @@ export default function InvestmentSimulator() {
     let totalInvestment = 0;
     let totalBtc = parseFloat(btcAmount as string);
     let btcPriceUsd = model.startPrice; // 初期値を明示的に設定
-    const newResults: {
-      year: number;
-      cagr: string;
-      btcPrice: string;
-      annualInvestment: string;
-      btcPurchased: string;
-      totalBtc: string;
-      totalValue: string;
-      btcPriceUsd: number; // btcPriceUsd を number 型に
-      totalBtcRaw: number;
-    }[] = []; // results の型を明示的に定義
 
     for (let i = 0; i < model.cagr.length; i++) {
       const year = CURRENT_YEAR + i;
       const cagr = model.cagr[i] / 100;
 
-      btcPriceUsd = btcPriceUsd * (1 + cagr); // 今年のBTC価格を計算 (USD)
+      btcPriceUsd *= (1 + cagr);  // 毎年の価格を更新 (USD)
       const btcPriceJpy = btcPriceUsd * usdJpyRate;
       const btcPurchased = yearlyInvestment / btcPriceJpy;
       totalBtc += btcPurchased;
