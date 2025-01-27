@@ -55,30 +55,19 @@ export default function InvestmentSimulator() {
     const yearlyInvestment = parseFloat(monthlyInvestment.toString()) * 12 * 1_0000; // 年間投資額 (円)
     let totalInvestment = 0; // 累計投資額
     let totalBtc = parseFloat(btcAmount.toString()); // 初期BTC量
-    const newResults = [];
-  
-    for (let i = 0; i < model.cagr.length; i++) {
-      const year = CURRENT_YEAR + i;
-      const cagr = model.cagr[i] / 100;
-      const btcPriceUsd = i === 0 ? model.startPrice : newResults[i - 1].btcPriceUsd * (1 + cagr);
-      const btcPriceJpy = btcPriceUsd * usdJpyRate;
-  
-      const btcPurchased = yearlyInvestment / btcPriceJpy; // 追加BTC量
-      totalInvestment += yearlyInvestment;
-      totalBtc += btcPurchased;
-  
-      newResults.push({
-        year,
-        cagr: `${(cagr * 100).toFixed(1)}%`,
-        btcPrice: formatMoney(btcPriceJpy),
-        annualInvestment: formatMoney(yearlyInvestment),
-        btcPurchased: `${btcPurchased.toFixed(4)} BTC`,
-        totalBtc: `${totalBtc.toFixed(4)} BTC`,
-        totalValue: formatMoney(totalBtc * btcPriceJpy),
-        btcPriceUsd, // グラフ用
-        totalBtcRaw: totalBtc, // グラフ用
-      });
-    }
+    const [results, setResults] = useState<
+    {
+      year: number;
+      cagr: string;
+      btcPrice: string;
+      annualInvestment: string;
+      btcPurchased: string;
+      totalBtc: string;
+      totalValue: string;
+      btcPriceUsd: number;
+      totalBtcRaw: number;
+    }[]
+  >([]);
   
     setResults(newResults);
   };
