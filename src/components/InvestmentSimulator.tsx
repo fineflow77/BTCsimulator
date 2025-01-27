@@ -19,17 +19,6 @@ import { MODELS, CURRENT_YEAR } from "@/constants/models";
 
 // ... (formatMoney, parseFormattedMoney 関数)
 
-export default function InvestmentSimulator() {
-  // ... (state)
-
-  const handleCalculate = () => {
-    // ... (入力バリデーション、モデルデータの取得など)
-
-    "use client";
-
-// ... (インポート)
-
-// ... (formatMoney, parseFormattedMoney 関数)
 
 export default function InvestmentSimulator() {
   // ... (state)
@@ -47,18 +36,19 @@ export default function InvestmentSimulator() {
       totalValue: string;
       btcPriceUsd: number;
       totalBtcRaw: number;
-    }[] = []; // resultの型を明示的に定義
+    }[] = [];
+
 
     let totalBtc = parseFloat(btcAmount as string);
-    let btcPriceUsd = model.startPrice; // 初期値設定 (誤って const で再宣言しないように注意)
+    let btcPriceUsd = model.startPrice; // 初期値設定
     let totalInvestment = 0
 
     for (let i = 0; i < model.cagr.length; i++) {
       const year = CURRENT_YEAR + i;
       const cagr = model.cagr[i] / 100;
-      const yearlyInvestment = parseFloat(monthlyInvestment as string) * 12 * 1_0000; // 年間投資額をループ内で計算
+      const yearlyInvestment = parseFloat(monthlyInvestment as string) * 12 * 1_0000;
 
-      btcPriceUsd *= (1 + cagr); // 毎年の価格を更新 (USD, 再宣言しない)
+      btcPriceUsd *= (1 + cagr); // 毎年の価格を更新 (USD) <--- これが63行目
       const btcPriceJpy = btcPriceUsd * usdJpyRate;
 
       const btcPurchased = yearlyInvestment / btcPriceJpy;
@@ -66,6 +56,7 @@ export default function InvestmentSimulator() {
       totalInvestment += yearlyInvestment
 
       const totalValue = totalBtc * btcPriceJpy;
+
 
       newResults.push({
         year,
@@ -83,5 +74,5 @@ export default function InvestmentSimulator() {
     setResults(newResults);
   };
 
-  // ... (chartData, chartOptions, JSX は変更なし)
+  // ... (chartData, chartOptions, JSX)
 }
