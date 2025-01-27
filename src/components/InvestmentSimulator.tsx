@@ -44,28 +44,29 @@ export default function InvestmentSimulator() {
 
   const handleCalculate = () => {
     setErrorMessage(null);
-
+  
+    // 型チェックを追加
     if (btcAmount === "" || monthlyInvestment === "") {
       setErrorMessage("すべての項目を入力してください。");
       return;
     }
-
+  
     const model = MODELS[modelKey];
-    const yearlyInvestment = parseFloat(monthlyInvestment as string) * 12 * 1_0000; // 年間投資額 (円)
+    const yearlyInvestment = parseFloat(monthlyInvestment.toString()) * 12 * 1_0000; // 年間投資額 (円)
     let totalInvestment = 0; // 累計投資額
-    let totalBtc = parseFloat(btcAmount as string); // 初期BTC量
+    let totalBtc = parseFloat(btcAmount.toString()); // 初期BTC量
     const newResults = [];
-
+  
     for (let i = 0; i < model.cagr.length; i++) {
       const year = CURRENT_YEAR + i;
       const cagr = model.cagr[i] / 100;
-      const btcPriceUsd = i === 0 ? model.startPrice : newResults[i - 1].btcPriceUsd * (1 + cagr); // 今年のBTC価格
+      const btcPriceUsd = i === 0 ? model.startPrice : newResults[i - 1].btcPriceUsd * (1 + cagr);
       const btcPriceJpy = btcPriceUsd * usdJpyRate;
-
+  
       const btcPurchased = yearlyInvestment / btcPriceJpy; // 追加BTC量
       totalInvestment += yearlyInvestment;
       totalBtc += btcPurchased;
-
+  
       newResults.push({
         year,
         cagr: `${(cagr * 100).toFixed(1)}%`,
@@ -78,7 +79,7 @@ export default function InvestmentSimulator() {
         totalBtcRaw: totalBtc, // グラフ用
       });
     }
-
+  
     setResults(newResults);
   };
 

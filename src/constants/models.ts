@@ -1,7 +1,13 @@
-// constants/models.ts
-export const CURRENT_YEAR = 2025; // または現在の年
+// src/constants/models.ts
+export const CURRENT_YEAR = 2025;
 
-export const MODELS = {
+export interface Model {
+  name: string;
+  startPrice: number; // 初期価格 (USD)
+  cagr: number[];     // 年平均成長率 (CAGR)
+}
+
+export const MODELS: Record<string, Model> = {
   aggressive: {
     name: "積極的モデル",
     startPrice: 100000,

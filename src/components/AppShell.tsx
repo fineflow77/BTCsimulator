@@ -1,11 +1,9 @@
 "use client";
 
-import React, { ReactNode } from "react";
-import WithdrawalSimulator from "@/components/WithdrawalSimulator";
-import InvestmentSimulator from "@/components/InvestmentSimulator";
+import React, { useState } from "react";
 
 interface AppShellProps {
-  children: ReactNode; // children の型定義を追加
+  children: React.ReactNode;
 }
 
 export default function AppShell({ children }: AppShellProps) {
@@ -13,7 +11,9 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen p-6 bg-gray-50 text-black">
-      <h1 className="text-3xl font-bold mb-6 text-center">Bitcoin Power Law Simulator</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Bitcoin Power Law Simulator
+      </h1>
       <div className="flex justify-center gap-4 mb-6">
         <button
           onClick={() => setActiveTab("withdrawal")}
@@ -32,9 +32,7 @@ export default function AppShell({ children }: AppShellProps) {
           積み立てシミュレーター
         </button>
       </div>
-      {activeTab === "withdrawal" && <WithdrawalSimulator />}
-      {activeTab === "investment" && <InvestmentSimulator />}
-      {children && <div className="mt-6">{children}</div>}
+      <div>{children}</div>
     </div>
   );
 }
