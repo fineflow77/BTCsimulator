@@ -1,101 +1,69 @@
-import Image from "next/image";
+import AppShell from "@/components/AppShell";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
+  return <AppShell />;
+<div class="relative grid min-h-screen grid-cols-[1fr_2.5rem_auto_2.5rem_1fr] grid-rows-[1fr_1px_auto_1px_1fr] bg-white [--pattern-fg:var(--color-gray-950)]/5 dark:bg-gray-950 dark:[--pattern-fg:var(--color-white)]/10">
+  <div class="col-start-3 row-start-3 flex max-w-lg flex-col bg-gray-100 p-2 dark:bg-white/10">
+    <div class="rounded-xl bg-white p-10 text-sm/7 text-gray-700 dark:bg-gray-950 dark:text-gray-300">
+      <img src="/img/logo.svg" class="mb-11.5 h-6 dark:hidden" alt="Tailwind Play" />
+      <img src="/img/logo-dark.svg" class="mb-11.5 h-6 not-dark:hidden" alt="Tailwind Play" />
+      <div class="space-y-6">
+        <p>An advanced online playground for Tailwind CSS, including support for things like:</p>
+        <ul class="space-y-3">
+          <li class="flex items-center">
+            <svg class="size-5.5 shrink-0" fill="none" stroke-linecap="square">
+              <circle cx="11" cy="11" r="11" class="fill-sky-400/25" />
+              <circle cx="11" cy="11" r="10.5" class="stroke-sky-400/25" />
+              <path d="M8 11.5L10.5 14L14 8" class="stroke-sky-800 dark:stroke-sky-300" />
+            </svg>
+            <p class="ml-3">
+              Customizing your theme with
+              <code class="font-mono font-medium text-gray-950 dark:text-white">@theme</code>
+            </p>
           </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <li class="flex items-center">
+            <svg class="size-5.5 shrink-0" fill="none" stroke-linecap="square">
+              <circle cx="11" cy="11" r="11" class="fill-sky-400/25" />
+              <circle cx="11" cy="11" r="10.5" class="stroke-sky-400/25" />
+              <path d="M8 11.5L10.5 14L14 8" class="stroke-sky-800 dark:stroke-sky-300" />
+            </svg>
+            <p class="ml-3">
+              Adding custom utilities with
+              <code class="font-mono font-medium text-gray-950 dark:text-white">@utility</code>
+            </p>
+          </li>
+          <li class="flex items-center">
+            <svg class="size-5.5 shrink-0" fill="none" stroke-linecap="square">
+              <circle cx="11" cy="11" r="11" class="fill-sky-400/25" />
+              <circle cx="11" cy="11" r="10.5" class="stroke-sky-400/25" />
+              <path d="M8 11.5L10.5 14L14 8" class="stroke-sky-800 dark:stroke-sky-300" />
+            </svg>
+            <p class="ml-3">
+              Adding custom variants with
+              <code class="font-mono font-medium text-gray-950 dark:text-white">@variant</code>
+            </p>
+          </li>
+          <li class="flex items-center">
+            <svg class="size-5.5 shrink-0" fill="none" stroke-linecap="square">
+              <circle cx="11" cy="11" r="11" class="fill-sky-400/25" />
+              <circle cx="11" cy="11" r="10.5" class="stroke-sky-400/25" />
+              <path d="M8 11.5L10.5 14L14 8" class="stroke-sky-800 dark:stroke-sky-300" />
+            </svg>
+            <p class="ml-3">Code completion with instant preview</p>
+          </li>
+        </ul>
+        <p>Perfect for learning how the framework works, prototyping a new idea, or creating a demo to share online.</p>
+      </div>
+      <hr class="my-6 w-full border-(--pattern-fg)" />
+      <p class="mb-3">Want to dig deeper into Tailwind?</p>
+      <p class="font-semibold">
+        <a href="https://tailwindcss.com/docs" class="text-gray-950 underline decoration-sky-400 underline-offset-3 hover:decoration-2 dark:text-white">Read the docs &rarr;</a>
+      </p>
     </div>
-  );
+  </div>
+  <div class="relative -right-px col-start-2 row-span-full row-start-1 border-x border-x-(--pattern-fg) bg-[image:repeating-linear-gradient(315deg,_var(--pattern-fg)_0,_var(--pattern-fg)_1px,_transparent_0,_transparent_50%)] bg-[size:10px_10px] bg-fixed"></div>
+  <div class="relative -left-px col-start-4 row-span-full row-start-1 border-x border-x-(--pattern-fg) bg-[image:repeating-linear-gradient(315deg,_var(--pattern-fg)_0,_var(--pattern-fg)_1px,_transparent_0,_transparent_50%)] bg-[size:10px_10px] bg-fixed"></div>
+  <div class="relative -bottom-px col-span-full col-start-1 row-start-2 h-px bg-(--pattern-fg)"></div>
+  <div class="relative -top-px col-span-full col-start-1 row-start-4 h-px bg-(--pattern-fg)"></div>
+</div>
 }
