@@ -67,23 +67,24 @@ export default function InvestmentSimulator() {
       totalBtcRaw: number;
     }[] = [];
 
-    // 初期値を独立変数として保持
-    let btcPriceUsd = model.startPrice;
+    // 初期BTC価格を変数として管理
+    let previousBtcPriceUsd = model.startPrice;
 
     // シミュレーション計算
     for (let i = 0; i < model.cagr.length; i++) {
       const year = CURRENT_YEAR + i;
       const cagr = model.cagr[i] / 100;
 
-      btcPriceUsd *= (1 + cagr); // BTC価格の更新
+      // BTC価格の更新
+      const btcPriceUsd = previousBtcPriceUsd * (1 + cagr);
       const btcPriceJpy = btcPriceUsd * usdJpyRate;
 
-      const btcPurchased = yearlyInvestment / btcPriceJpy; // 年間購入BTC
+      // 年間購入BTC量
+      const btcPurchased = yearlyInvestment / btcPriceJpy;
       totalInvestment += yearlyInvestment;
       totalBtc += btcPurchased;
 
-      const totalValue = totalBtc * btcPriceJpy;
-
+      // 結果を配列に追加
       newResults.push({
         year,
         cagr: `${(cagr * 100).toFixed(1)}%`,
@@ -91,10 +92,13 @@ export default function InvestmentSimulator() {
         annualInvestment: formatMoney(yearlyInvestment),
         btcPurchased: `${btcPurchased.toFixed(4)} BTC`,
         totalBtc: `${totalBtc.toFixed(4)} BTC`,
-        totalValue: formatMoney(totalValue),
+        totalValue: formatMoney(totalBtc * btcPriceJpy),
         btcPriceUsd,
         totalBtcRaw: totalBtc,
       });
+
+      // 次年のBTC価格更新用に保持
+      previousBtcPriceUsd = btcPriceUsd;
     }
 
     setResults(newResults);
