@@ -2,90 +2,87 @@
 
 import { useState } from "react";
 import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { MODELS, CURRENT_YEAR } from "@/constants/models";
 
-// 金額フォーマット関数
-const formatMoney = (amount: number): string => {
-  if (amount >= 1e8) return `${(amount / 1e8).toFixed(2)}億円`;
-  if (amount >= 1e4) return `${(amount / 1e4).toFixed(1)}万円`;
-  return `${amount.toFixed(0)}円`;
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+type ResultType = {
+  year: number;
+  cagr: string;
+  btcPrice: string;
+  withdrawalAmount: string;
+  withdrawalRate: string;
+  remainingBtc: string;
+  portfolioValue: string;
 };
 
-// 金額を数値に変換する関数
-const parseFormattedMoney = (formatted: string): number => {
-  if (formatted.includes("億円")) return parseFloat(formatted.replace("億円", "")) * 1e8;
-  if (formatted.includes("万円")) return parseFloat(formatted.replace("万円", "")) * 1e4;
-  return parseFloat(formatted.replace("円", ""));
+const formatMoney = (amount: number): string => {
+  if (amount >= 1e8) return `${(amount / 1e8).toFixed(2)}億円`;
+  if (amount >= 1e4) return `${(amount / 1e4).toFixed(2)}万円`;
+  return `${amount.toFixed(0)}円`;
 };
 
 export default function WithdrawalSimulator() {
   const [btcAmount, setBtcAmount] = useState<number | "">("");
   const [modelKey, setModelKey] = useState<string>("balanced");
-  const [startYear, setStartYear] = useState<number | "">(2025);
-  const [withdrawalType, setWithdrawalType] = useState<"fixed" | "rate">("fixed"); // 定額か定率かの選択
-  const [withdrawalValue, setWithdrawalValue] = useState<number | "">(""); // 定額または定率の入力値
-  const [taxRate, setTaxRate] = useState<number>(20.315);
+  const [startYear, setStartYear] = useState<number>(2025);
+  const [withdrawalMethod, setWithdrawalMethod] = useState<string>("fixedAmount");
+  const [fixedAmount, setFixedAmount] = useState<number | "">("");
+  const [percentage, setPercentage] = useState<number | "">("");
   const [usdJpyRate, setUsdJpyRate] = useState<number>(150);
-  const [results, setResults] = useState<any[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [taxRate, setTaxRate] = useState<number>(20.315);
+  const [results, setResults] = useState<ResultType[]>([]);
 
   const handleCalculate = () => {
-    setErrorMessage(null);
-
-    if (btcAmount === "" || startYear === "" || withdrawalValue === "") {
-      setErrorMessage("すべての項目を入力してください。");
+    if (btcAmount === "" || startYear < 2025 || (!fixedAmount && !percentage)) {
+      alert("すべての項目を入力してください。");
       return;
     }
 
     const parsedBtcAmount = parseFloat(btcAmount as string);
-    const parsedStartYear = parseInt(startYear as string);
-    const parsedWithdrawalValue = parseFloat(withdrawalValue as string);
-
-    if (isNaN(parsedBtcAmount) || isNaN(parsedStartYear) || isNaN(parsedWithdrawalValue)) {
-      setErrorMessage("数値を正しく入力してください。");
-      return;
-    }
+    const parsedFixedAmount = parseFloat(fixedAmount as string) * 1_0000 || 0;
+    const parsedPercentage = parseFloat(percentage as string) / 100 || 0;
 
     const model = MODELS[modelKey];
     let remainingBtc = parsedBtcAmount;
-    let previousPriceUsd = model.startPrice;
-
-    const newResults = [];
+    const newResults: ResultType[] = [];
 
     for (let i = 0; i < model.cagr.length; i++) {
       const year = CURRENT_YEAR + i;
       const cagr = model.cagr[i] / 100;
-
-      const btcPriceUsd = previousPriceUsd * (1 + cagr);
+      const btcPriceUsd = i === 0 ? model.startPrice : newResults[i - 1].btcPriceUsd * (1 + cagr);
       const btcPriceJpy = btcPriceUsd * usdJpyRate;
-      const portfolioValueJpy = remainingBtc * btcPriceJpy;
 
-      let withdrawalAmountJpy = 0;
-      if (year >= parsedStartYear) {
-        if (withdrawalType === "fixed") {
-          withdrawalAmountJpy = parsedWithdrawalValue * 1_0000; // 定額（万円 -> 円）
-        } else if (withdrawalType === "rate") {
-          withdrawalAmountJpy = (portfolioValueJpy * parsedWithdrawalValue) / 100; // 定率
-        }
-      }
+      const withdrawalAmountJpy =
+        withdrawalMethod === "fixedAmount"
+          ? parsedFixedAmount
+          : (remainingBtc * btcPriceJpy * parsedPercentage) / (1 - taxRate / 100);
 
       const withdrawalBtc = withdrawalAmountJpy / btcPriceJpy;
+      const portfolioValueJpy = remainingBtc * btcPriceJpy;
       const withdrawalRate = portfolioValueJpy > 0 ? (withdrawalAmountJpy / portfolioValueJpy) * 100 : 0;
 
       newResults.push({
         year,
         cagr: `${(cagr * 100).toFixed(1)}%`,
         btcPrice: formatMoney(btcPriceJpy),
-        withdrawalRate: `${withdrawalRate.toFixed(1)}%`,
         withdrawalAmount: formatMoney(withdrawalAmountJpy),
+        withdrawalRate: `${withdrawalRate.toFixed(2)}%`,
         remainingBtc: `${Math.max(remainingBtc - withdrawalBtc, 0).toFixed(4)} BTC`,
-        assetValue: formatMoney(portfolioValueJpy),
-        remainingBtcRaw: Math.max(remainingBtc - withdrawalBtc, 0),
+        portfolioValue: formatMoney(portfolioValueJpy),
       });
 
-      remainingBtc =
-        year >= parsedStartYear ? Math.max(remainingBtc - withdrawalBtc, 0) : remainingBtc;
-      previousPriceUsd = btcPriceUsd;
+      remainingBtc = Math.max(remainingBtc - withdrawalBtc, 0);
     }
 
     setResults(newResults);
@@ -96,14 +93,14 @@ export default function WithdrawalSimulator() {
     datasets: [
       {
         label: "残りBTC",
-        data: results.map((result) => result.remainingBtcRaw),
+        data: results.map((result) => parseFloat(result.remainingBtc)),
         borderColor: "rgb(53, 162, 235)",
         backgroundColor: "rgba(53, 162, 235, 0.5)",
         yAxisID: "btc-axis",
       },
       {
         label: "資産評価額 (円)",
-        data: results.map((result) => parseFormattedMoney(result.assetValue)),
+        data: results.map((result) => parseFloat(result.portfolioValue)),
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
         yAxisID: "value-axis",
@@ -113,66 +110,42 @@ export default function WithdrawalSimulator() {
 
   const chartOptions = {
     responsive: true,
-    interaction: {
-      mode: "index" as const,
-      intersect: false,
-    },
     scales: {
-      x: {
-        title: {
-          display: true,
-          text: "年",
-        },
-      },
       "btc-axis": {
-        type: "linear",
-        position: "left",
+        type: "linear" as const,
+        position: "left" as const,
         min: 0,
-        title: {
-          display: true,
-          text: "残りBTC",
-        },
       },
       "value-axis": {
-        type: "linear",
-        position: "right",
-        title: {
-          display: true,
-          text: "資産評価額 (円)",
-        },
-        grid: {
-          drawOnChartArea: false,
-        },
+        type: "linear" as const,
+        position: "right" as const,
         ticks: {
-          callback: function (value: number) {
-            return formatMoney(value);
-          },
+          callback: (value: number) => formatMoney(value),
         },
       },
     },
   };
 
   return (
-    <div className="p-4 bg-gray-50 text-gray-900">
-      <h1 className="text-2xl font-bold mb-4">取り崩しシミュレーター</h1>
-      {errorMessage && <div className="text-red-500">{errorMessage}</div>}
+    <div className="p-4 bg-white">
+      <h2 className="text-xl font-bold mb-4">取り崩しシミュレーター</h2>
       <div className="space-y-4">
         <div>
-          <label className="block font-bold">保有BTC量</label>
+          <label>保有BTC量</label>
           <input
             type="number"
             value={btcAmount}
-            onChange={(e) => setBtcAmount(e.target.value ? parseFloat(e.target.value) : "")}
-            className="w-full p-2 border border-gray-300 rounded"
+            onChange={(e) => setBtcAmount(e.target.value)}
             placeholder="例: 2.0"
+            className="border border-gray-300 rounded p-2 w-full"
           />
         </div>
         <div>
-          <label className="block font-bold">モデル</label>
+          <label>モデル</label>
           <select
             value={modelKey}
             onChange={(e) => setModelKey(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="border border-gray-300 rounded p-2 w-full"
           >
             {Object.entries(MODELS).map(([key, model]) => (
               <option key={key} value={key}>
@@ -182,86 +155,90 @@ export default function WithdrawalSimulator() {
           </select>
         </div>
         <div>
-          <label className="block font-bold">取り崩し開始年</label>
+          <label>取り崩し開始年</label>
           <input
             type="number"
             value={startYear}
-            onChange={(e) => setStartYear(e.target.value ? parseInt(e.target.value) : "")}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="例: 2025"
+            onChange={(e) => setStartYear(Number(e.target.value))}
+            className="border border-gray-300 rounded p-2 w-full"
           />
         </div>
         <div>
-          <label className="block font-bold">取り崩し方法</label>
-          <select
-            value={withdrawalType}
-            onChange={(e) => setWithdrawalType(e.target.value as "fixed" | "rate")}
-            className="w-full p-2 border border-gray-300 rounded"
-          >
-            <option value="fixed">定額 (万円)</option>
-            <option value="rate">定率 (%)</option>
-          </select>
+          <label>取り崩し方法</label>
+          <div className="flex space-x-4">
+            <label>
+              <input
+                type="radio"
+                value="fixedAmount"
+                checked={withdrawalMethod === "fixedAmount"}
+                onChange={() => setWithdrawalMethod("fixedAmount")}
+              />
+              定額
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="fixedRate"
+                checked={withdrawalMethod === "fixedRate"}
+                onChange={() => setWithdrawalMethod("fixedRate")}
+              />
+              定率
+            </label>
+          </div>
         </div>
-        <div>
-          <label className="block font-bold">
-            {withdrawalType === "fixed" ? "年間取り崩し額 (税引き後・万円)" : "年間取り崩し率 (%)"}
-          </label>
-          <input
-            type="number"
-            value={withdrawalValue}
-            onChange={(e) => setWithdrawalValue(e.target.value ? parseFloat(e.target.value) : "")}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder={withdrawalType === "fixed" ? "例: 50" : "例: 5"}
-          />
-        </div>
-        <div>
-          <label className="block font-bold">税率 (%)</label>
-          <input
-            type="number"
-            value={taxRate}
-            onChange={(e) => setTaxRate(parseFloat(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="例: 20.315"
-          />
-        </div>
-        <div>
-          <label className="block font-bold">為替レート (円/USD)</label>
-          <input
-            type="number"
-            value={usdJpyRate}
-            onChange={(e) => setUsdJpyRate(parseFloat(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="例: 150"
-          />
-        </div>
-        <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" onClick={handleCalculate}>
+        {withdrawalMethod === "fixedAmount" && (
+          <div>
+            <label>年間取り崩し額 (万円)</label>
+            <input
+              type="number"
+              value={fixedAmount}
+              onChange={(e) => setFixedAmount(Number(e.target.value))}
+              className="border border-gray-300 rounded p-2 w-full"
+            />
+          </div>
+        )}
+        {withdrawalMethod === "fixedRate" && (
+          <div>
+            <label>取り崩し率 (%)</label>
+            <input
+              type="number"
+              value={percentage}
+              onChange={(e) => setPercentage(Number(e.target.value))}
+              className="border border-gray-300 rounded p-2 w-full"
+            />
+          </div>
+        )}
+        <button
+          className="bg-blue-500 text-white rounded px-4 py-2"
+          onClick={handleCalculate}
+        >
           計算
         </button>
       </div>
       {results.length > 0 && (
         <div>
-          <table className="mt-6 w-full border-collapse border border-gray-300">
+          <table className="w-full border-collapse border border-gray-300 mt-6">
             <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-gray-300 px-4 py-2">年</th>
-                <th className="border border-gray-300 px-4 py-2">CAGR</th>
-                <th className="border border-gray-300 px-4 py-2">1BTC価格</th>
-                <th className="border border-gray-300 px-4 py-2">取り崩し率</th>
-                <th className="border border-gray-300 px-4 py-2">年間取り崩し額</th>
-                <th className="border border-gray-300 px-4 py-2">残りBTC</th>
-                <th className="border border-gray-300 px-4 py-2">資産評価額</th>
+              <tr>
+                <th className="border p-2">年</th>
+                <th className="border p-2">CAGR</th>
+                <th className="border p-2">1BTC価格</th>
+                <th className="border p-2">年間取り崩し額</th>
+                <th className="border p-2">取り崩し率</th>
+                <th className="border p-2">残りBTC</th>
+                <th className="border p-2">資産評価額</th>
               </tr>
             </thead>
             <tbody>
               {results.map((result, idx) => (
                 <tr key={idx}>
-                  <td className="border border-gray-300 px-4 py-2">{result.year}</td>
-                  <td className="border border-gray-300 px-4 py-2">{result.cagr}</td>
-                  <td className="border border-gray-300 px-4 py-2">{result.btcPrice}</td>
-                  <td className="border border-gray-300 px-4 py-2">{result.withdrawalRate}</td>
-                  <td className="border border-gray-300 px-4 py-2">{result.withdrawalAmount}</td>
-                  <td className="border border-gray-300 px-4 py-2">{result.remainingBtc}</td>
-                  <td className="border border-gray-300 px-4 py-2">{result.assetValue}</td>
+                  <td className="border p-2">{result.year}</td>
+                  <td className="border p-2">{result.cagr}</td>
+                  <td className="border p-2">{result.btcPrice}</td>
+                  <td className="border p-2">{result.withdrawalAmount}</td>
+                  <td className="border p-2">{result.withdrawalRate}</td>
+                  <td className="border p-2">{result.remainingBtc}</td>
+                  <td className="border p-2">{result.portfolioValue}</td>
                 </tr>
               ))}
             </tbody>
