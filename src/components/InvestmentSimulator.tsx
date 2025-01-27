@@ -24,65 +24,49 @@ const formatMoney = (amount: number): string => {
   return `${amount.toFixed(0)}円`;
 };
 
+// ... (インポート)
+
+// ... (formatMoney, parseFormattedMoney 関数)
+
 export default function InvestmentSimulator() {
-  const [btcAmount, setBtcAmount] = useState<number | "">("");
-  const [monthlyInvestment, setMonthlyInvestment] = useState<number | "">("");
-  const [modelKey, setModelKey] = useState<string>("balanced");
-  const [usdJpyRate, setUsdJpyRate] = useState<number>(150);
-  const [results, setResults] = useState<{
-    year: number;
-    cagr: string;
-    btcPrice: string;
-    annualInvestment: string;
-    btcPurchased: string;
-    totalBtc: string;
-    totalValue: string;
-    btcPriceUsd: number; // 型注釈を追加
-    totalBtcRaw: number;
-  }[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // ... (state)
 
   const handleCalculate = () => {
-    setErrorMessage(null);
-
-    if (btcAmount === "" || monthlyInvestment === "") {
-      setErrorMessage("すべての項目を入力してください。");
-      return;
-    }
-
-    const parsedBtcAmount = parseFloat(btcAmount as string);
-    const parsedMonthlyInvestment = parseFloat(monthlyInvestment as string);
-
-    if (isNaN(parsedBtcAmount) || isNaN(parsedMonthlyInvestment)) {
-      setErrorMessage("入力値が不正です。数値を入力してください。");
-      return;
-    }
+    // ... (入力バリデーション)
 
     const model = MODELS[modelKey];
-    if (!model || !model.cagr) { // modelが存在し、cagrが定義されているかチェック
+    if (!model || !model.cagr) {
       setErrorMessage("選択したモデルまたはCAGRデータが無効です。");
       return;
     }
 
-    const yearlyInvestment = parsedMonthlyInvestment * 12 * 1_0000; // 年間投資額 (円)
-    let totalInvestment = 0; // 累計投資額
-    let totalBtc = parsedBtcAmount; // 初期BTC量
-    let btcPriceUsd = model.startPrice; // 初期価格を設定
-
-    const newResults = [];
+    const yearlyInvestment = parseFloat(monthlyInvestment as string) * 12 * 1_0000;
+    let totalInvestment = 0;
+    let totalBtc = parseFloat(btcAmount as string);
+    let btcPriceUsd = model.startPrice; // 初期値を明示的に設定
+    const newResults: {
+      year: number;
+      cagr: string;
+      btcPrice: string;
+      annualInvestment: string;
+      btcPurchased: string;
+      totalBtc: string;
+      totalValue: string;
+      btcPriceUsd: number; // btcPriceUsd を number 型に
+      totalBtcRaw: number;
+    }[] = []; // results の型を明示的に定義
 
     for (let i = 0; i < model.cagr.length; i++) {
       const year = CURRENT_YEAR + i;
       const cagr = model.cagr[i] / 100;
 
       btcPriceUsd = btcPriceUsd * (1 + cagr); // 今年のBTC価格を計算 (USD)
-      const btcPriceJpy = btcPriceUsd * usdJpyRate; // BTC価格を円に変換
-
-      const btcPurchased = yearlyInvestment / btcPriceJpy; // 購入したBTC量
-      totalBtc += btcPurchased; // BTCの合計量を更新
-      totalInvestment += yearlyInvestment; // 累計投資額を更新
-
+      const btcPriceJpy = btcPriceUsd * usdJpyRate;
+      const btcPurchased = yearlyInvestment / btcPriceJpy;
+      totalBtc += btcPurchased;
+      totalInvestment += yearlyInvestment;
       const totalValue = totalBtc * btcPriceJpy;
+
 
       newResults.push({
         year,
@@ -93,14 +77,12 @@ export default function InvestmentSimulator() {
         totalBtc: `${totalBtc.toFixed(4)} BTC`,
         totalValue: formatMoney(totalValue),
         btcPriceUsd: btcPriceUsd, // 計算用
-        totalBtcRaw: totalBtc // 計算用
+        totalBtcRaw: totalBtc, // 計算用
       });
     }
-
 
     setResults(newResults);
   };
 
   // ... (chartData, chartOptions, JSX は変更なし)
-  // JSX部分で<Line data={chartData} options={chartOptions} />を呼び出す際に、optionsを追加してください。
 }
